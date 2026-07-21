@@ -38,13 +38,13 @@ Debugging information:
 BASH_COMMAND: <code>$(sanitize-string -- 255 "$BASH_COMMAND" || true)</code>
 exit_code: <code>$exit_code</code>"
 
-   MSG="$(/usr/libexec/msgcollector/br_add "$MSG")"
+   MSG="$(/usr/libexec/msgcollector/br_add.py "$MSG")"
 
    local title="open-link-confirmation bug"
    local question=""
    local button="ok"
    local msg="<p>$MSG</p>"
-   /usr/libexec/msgcollector/generic_gui_message "error" "$title" "$msg" "$question" "$button"
+   /usr/libexec/msgcollector/generic_gui_message.py "error" "$title" "$msg" "$question" "$button"
 
    exit 1
 }
@@ -91,7 +91,7 @@ preparation() {
       msg="<p>Recursively called more than $OPEN_LINK_CONFIRMATION_MAXIMUM times, maybe because no browser is installed, that supports open-link-confirmation.</p>"
       question=""
       button="ok"
-      /usr/libexec/msgcollector/generic_gui_message "error" "$title" "$msg" "$question" "$button"
+      /usr/libexec/msgcollector/generic_gui_message.py "error" "$title" "$msg" "$question" "$button"
       exit 211
    fi
 
@@ -197,7 +197,7 @@ gateway() {
 <p>Use $tb_title under Workstation to browse the internet.</p>"
    question=""
    button="ok"
-   /usr/libexec/msgcollector/generic_gui_message "error" "$title" "$msg" "$question" "$button"
+   /usr/libexec/msgcollector/generic_gui_message.py "error" "$title" "$msg" "$question" "$button"
    exit 0
 }
 
@@ -235,7 +235,7 @@ qubes_redirect() {
 <br></br>input_object_stripped_and_trimmed: <code>$input_object_stripped_and_trimmed</code>
 <br></br>link_confirmation_vm_open_tool_output: <code>$(sanitize-string -- 255 "$link_confirmation_vm_open_tool_output")</code>
 <br></br>link_confirmation_vm_open_tool_exit_code: <u>$link_confirmation_vm_open_tool_exit_code</u></p>"
-   /usr/libexec/msgcollector/generic_gui_message "error" "$title" "$msg" "$question" "$button"
+   /usr/libexec/msgcollector/generic_gui_message.py "error" "$title" "$msg" "$question" "$button"
    exit 1
 }
 
@@ -250,7 +250,7 @@ sysmaint_redirect() {
 
 <p>For security reasons, opening links while booted in '<code>PERSISTENT Mode | SYSMAINT Session</code>' is not supported.</p>
 <p>Ensure a suitable web browser is installed, then reboot into '<code>PERSISTENT Mode | USER Session</code>' or '<code>LIVE Mode | USER Session</code>' to browse the Web.</p>"
-   /usr/libexec/msgcollector/generic_gui_message "error" "$title" "$msg" "$question" "$button"
+   /usr/libexec/msgcollector/generic_gui_message.py "error" "$title" "$msg" "$question" "$button"
    exit 1
 }
 
@@ -314,7 +314,7 @@ workstation() {
 <p><code><blockquote>$input_object_stripped_and_trimmed$extra_long_link</blockquote></code></p>"
       question=""
       button="ok"
-      /usr/libexec/msgcollector/generic_gui_message "error" "$title" "$msg" "$question" "$button"
+      /usr/libexec/msgcollector/generic_gui_message.py "error" "$title" "$msg" "$question" "$button"
       exit 0
    fi
 
@@ -385,7 +385,7 @@ final() {
       if [ "$ask_for_confirmation" = "1" ]; then
          local answer
          answer="0"
-         answer="$(/usr/libexec/msgcollector/generic_gui_message "warning" "$title" "$msg" "$question" "$button")"
+         answer="$(/usr/libexec/msgcollector/generic_gui_message.py "warning" "$title" "$msg" "$question" "$button")"
          if [ ! "$answer" = "16384" ]; then ## Button 'Yes' has not been pressed.
             exit 0
          fi
@@ -396,7 +396,7 @@ final() {
       local question=""
       local button="ok"
       local msg="<p><b><u>ERROR</b></u>: <b>$open_in_tool_bin</b> does not exist! Please report this bug!</p>"
-      /usr/libexec/msgcollector/generic_gui_message "error" "$title" "$msg" "$question" "$button"
+      /usr/libexec/msgcollector/generic_gui_message.py "error" "$title" "$msg" "$question" "$button"
       exit 1
    fi
 
@@ -410,7 +410,7 @@ final() {
 #       local question=""
 #       local button="ok"
 #       local msg="<p><b><u>ERROR</b></u>: <b>$open_in_tool_bin</b> returned <u>$open_in_tool_exit_code</u>! Please report this bug!</p>"
-#       /usr/libexec/msgcollector/generic_gui_message "error" "$title" "$msg" "$question" "$button"
+#       /usr/libexec/msgcollector/generic_gui_message.py "error" "$title" "$msg" "$question" "$button"
 #    fi
 
    exit "$open_in_tool_exit_code"
