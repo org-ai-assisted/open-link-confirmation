@@ -73,15 +73,21 @@ exit_code: <code>${exit_code}</code>"
    error_question=""
    error_button="ok"
    error_body="<p>${error_message}</p>"
-   /usr/libexec/msgcollector/generic_gui_message.py "error" "${error_title}" "${error_body}" "${error_question}" "${error_button}"
+   ## Tolerate the dialog failing (same as sanitize-string above): the very
+   ## conditions that reach this handler -- a headless or display-unreachable
+   ## caller, a transiently crashing GUI tool -- are the ones that also break
+   ## this recovery dialog. Without '|| true' its failure re-enters the ERR
+   ## trap and aborts the handler mid-way (a raw SIGABRT exit plus core dumps)
+   ## instead of the defined 'exit 1' below.
+   /usr/libexec/msgcollector/generic_gui_message.py "error" "${error_title}" "${error_body}" "${error_question}" "${error_button}" || true
 
    exit 1
 }
 
 trap error_handler ERR
 
-# shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/has.sh
-source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/has.bsh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.bsh
 
 source_config() {
    ## Environment variables take precedence over the configuration files.
@@ -116,8 +122,13 @@ source_config() {
 preparation() {
    local trim input_object_string_length kernel_cmdline
 
-   ## Infinite loop protection.
-   is_whole_number "${OPEN_LINK_CONFIRMATION_MAXIMUM}" || OPEN_LINK_CONFIRMATION_MAXIMUM="5"
+   ## Infinite loop protection. The counter reaches 1 on the first call and the
+   ## guard below exits when counter >= maximum, so a maximum below 2 (e.g. an
+   ## inherited '0' or '1', which is_whole_number accepts) would abort every
+   ## first invocation. Require at least 2, else fall back to the default.
+   if ! is_whole_number "${OPEN_LINK_CONFIRMATION_MAXIMUM}" || [ "${OPEN_LINK_CONFIRMATION_MAXIMUM}" -lt 2 ]; then
+      OPEN_LINK_CONFIRMATION_MAXIMUM="5"
+   fi
    is_whole_number "${OPEN_LINK_CONFIRMATION_COUNTER}" || OPEN_LINK_CONFIRMATION_COUNTER="0"
    OPEN_LINK_CONFIRMATION_COUNTER=$(( OPEN_LINK_CONFIRMATION_COUNTER + 1 ))
    export OPEN_LINK_CONFIRMATION_COUNTER
@@ -304,7 +315,7 @@ sysmaint_redirect() {
 }
 
 workstation() {
-   local careful_text xdg_file_type xdg_desktop_file open_in_tool_path
+   local careful_text xdg_file_type xdg_desktop_file open_in_tool_path self_readlink
 
    if [ "${is_file}" = "1" ]; then
       [ -n "${open_in_tool_bin}" ] || open_in_tool_bin="xdg-open"
@@ -366,7 +377,15 @@ workstation() {
    [ -z "${tb_title}" ] || open_in_tool_bin_name="${tb_title}"
    [ -n "${open_in_tool_bin_name}" ] || open_in_tool_bin_name="${open_in_tool_bin}"
 
-   if [ "${open_in_tool_bin_name_readlink}" = "${BASH_SOURCE[0]}" ]; then
+   ## Canonicalize BASH_SOURCE[0] before comparing: open_in_tool_bin_name_readlink
+   ## is 'readlink -f'-resolved, but the script is registered as the x-www-browser
+   ## / gnome-www-browser alternative, so when invoked through that symlink
+   ## BASH_SOURCE[0] is '/usr/bin/x-www-browser', not the resolved target. Without
+   ## canonicalizing both sides this self-reference never matches, so the "no
+   ## browser installed" dialog is skipped and the script re-execs itself until
+   ## the recursion guard trips.
+   self_readlink="$(readlink -f "${BASH_SOURCE[0]}")" || true
+   if [ "${open_in_tool_bin_name_readlink}" = "${self_readlink}" ]; then
       title="Link Confirm Open ERROR"
       msg="<p>The following <b>${input_type}</b> cannot be opened in <u>${open_in_tool_bin_name}</u>, because no browser is installed, that supports open-link-confirmation.</p>
 <p><code><blockquote>${input_object_stripped_and_trimmed}${extra_long_link}</blockquote></code></p>"
@@ -459,8 +478,14 @@ final() {
    fi
 
    open_in_tool_exit_code="0"
+   ## Open exactly the ONE object that was confirmed. The dialog shows
+   ## input_object_original ("$*"); passing "$@" instead would hand a browser
+   ## several positional URLs (one tab each) when more than one argument was
+   ## given, opening links the user never distinctly confirmed. This matches
+   ## 'gateway', which also opens "${input_object_original}".
+   ## Deliberately unquoted extra opts, same reason as in 'gateway'.
    # shellcheck disable=SC2086
-   DE=generic "${open_in_tool_bin}" ${open_in_tool_extra_opts} "$@" >/dev/null 2>/dev/null \
+   DE=generic "${open_in_tool_bin}" ${open_in_tool_extra_opts} "${input_object_original}" >/dev/null 2>/dev/null \
       || open_in_tool_exit_code="$?"
 
    ## Do not show an error popup.
