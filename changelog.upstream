@@ -1,3 +1,79 @@
+commit 13f9f26ef54841940678521d8fce0a7a486ce691
+Merge: aacfdce e09d277
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Sep 12 09:44:48 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/ArrayBolt3/arraybolt3/trixie'
+
+commit e09d27704804aab812cc2b44bcce69b6a02e00a6
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Fri Sep 11 19:50:29 2026 -0400
+
+    Clean up comments, revert a bad fix attempt
+
+commit 43e2572fa32c5a08488d39e7203f1e81b72aea47
+Merge: aacfdce 5e3c3d1
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Fri Sep 11 19:37:01 2026 -0400
+
+    Merge branch 'ai' into arraybolt3/trixie
+
+commit 5e3c3d1aa0da6a19c73c711cf181081ca77d4e07
+Merge: 448faac 57cc2ab
+Author: claude (dev490 427cd1a1-bb80-4a36-9e14-2b6cec600780) <noreply@anthropic.com>
+Date:   Tue Sep 8 23:31:34 2026 -0400
+
+    Merge branch 'master' into ai
+
+    # Conflicts:
+    #       usr/libexec/open-link-confirmation/open-link-confirmation
+
+commit 57cc2abf51141bc92e74770dea207aec5b304d85
+Merge: 21f493b aacfdce
+Author: claude (dev490 427cd1a1-bb80-4a36-9e14-2b6cec600780) <noreply@anthropic.com>
+Date:   Tue Sep 8 23:30:56 2026 -0400
+
+    Merge remote-tracking branch 'up/master'
+
+commit 448faac6c61793f1a73b72e96272946f108c8e3b
+Author: claude (dev474 c7439536-fad8-4884-b71a-d2f3c4c23905) <noreply@anthropic.com>
+Date:   Mon Sep 7 11:47:44 2026 -0400
+
+    rename has.sh to has.bsh (bashism convention)
+
+    Sourced helper-scripts lib uses bashisms; .bsh marks it. Path-only edit.
+
+commit aacfdceef997b4bcc921ae2f2a02b9caf1a0e6ad
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Sep 6 16:45:42 2026 +0000
+
+    bumped changelog version
+
+commit 3e585f35b190677919fef1053e0852b3cc222277
+Author: claude (dev421 573bc9ba-3b4d-4993-94ef-3b572f5b8604) <noreply@anthropic.com>
+Date:   Fri Sep 4 05:13:47 2026 -0400
+
+    Fix pre-existing defects found in review
+
+    - final: open the single confirmed object, not "$@" -- multiple positional
+      URLs opened tabs the user never distinctly confirmed
+    - workstation: canonicalize BASH_SOURCE[0] before the self-reference check,
+      so invocation via the x-www-browser symlink shows "no browser installed"
+      instead of re-execing until the recursion guard trips
+    - preparation: require the loop maximum to be at least 2 -- an inherited 0
+      or 1 (which is_whole_number accepts) aborted every first invocation
+
+commit 98ca650d7f36c313dadf2cd8aa0aa42a6c3f0214
+Author: claude (dev421 573bc9ba-3b4d-4993-94ef-3b572f5b8604) <noreply@anthropic.com>
+Date:   Fri Sep 4 03:49:26 2026 -0400
+
+    Tolerate the error dialog failing in error_handler
+
+    - The conditions reaching the ERR handler (headless, unreachable display,
+      a crashing GUI tool) also break its own generic_gui_message report;
+      without '|| true' that re-enters the trap and aborts mid-handler (raw
+      SIGABRT plus core dumps) instead of the defined exit 1.
+
 commit 6593f5c25733c5a09167af7a2d940d98f87c7c9c
 Merge: 21f493b 02ff621
 Author: Patrick Schleizer <adrelanos@whonix.org>
